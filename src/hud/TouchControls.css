@@ -1,0 +1,154 @@
+/* ── Touch Controls Overlay ─────────────────────────────────────── */
+.touch-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 24px 24px;
+    pointer-events: none;
+    z-index: 100;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* ── D-Pad ─────────────────────────────────────────────────────── */
+.touch-dpad {
+    pointer-events: all;
+    touch-action: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.dpad-ring {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 2px solid rgba(100, 200, 255, 0.25);
+    background: rgba(10, 20, 35, 0.5);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s;
+}
+
+.touch-dpad.active .dpad-ring {
+    border-color: rgba(100, 200, 255, 0.6);
+    box-shadow: 0 0 20px rgba(100, 200, 255, 0.15);
+}
+
+.dpad-arrows {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dpad-arrow {
+    position: absolute;
+    font-size: 14px;
+    color: rgba(100, 200, 255, 0.35);
+    line-height: 1;
+}
+
+.dpad-arrow.up {
+    top: 10px;
+}
+
+.dpad-arrow.down {
+    bottom: 10px;
+}
+
+.dpad-arrow.left {
+    left: 12px;
+}
+
+.dpad-arrow.right {
+    right: 12px;
+}
+
+.touch-dpad.active .dpad-arrow {
+    color: rgba(100, 200, 255, 0.7);
+}
+
+.dpad-knob {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(100, 200, 255, 0.3);
+    border: 1px solid rgba(100, 200, 255, 0.4);
+    transition: transform 0.06s, background 0.1s;
+    z-index: 1;
+}
+
+/* ── Grip Button ───────────────────────────────────────────────── */
+.touch-grip {
+    pointer-events: all;
+    touch-action: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.grip-ring {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 180, 60, 0.25);
+    background: rgba(30, 20, 10, 0.5);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.touch-grip.active .grip-ring {
+    border-color: rgba(255, 180, 60, 0.8);
+    background: rgba(255, 180, 60, 0.15);
+    box-shadow: 0 0 25px rgba(255, 180, 60, 0.2);
+    transform: scale(1.08);
+}
+
+.grip-icon {
+    font-size: 32px;
+    line-height: 1;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+}
+
+.touch-grip.active .grip-icon {
+    opacity: 1;
+}
+
+/* ── Labels ────────────────────────────────────────────────────── */
+.touch-label {
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: rgba(180, 200, 220, 0.4);
+    text-transform: uppercase;
+}
+
+.touch-dpad.active .touch-label,
+.touch-grip.active .touch-label {
+    color: rgba(180, 200, 220, 0.7);
+}
+
+/* ── Hide on desktop ───────────────────────────────────────────── */
+@media (hover: hover) and (pointer: fine) {
+    .touch-controls {
+        display: none;
+    }
+}

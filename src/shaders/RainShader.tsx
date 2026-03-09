@@ -3,7 +3,11 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from '../stores/gameStore';
 
-const RAIN_COUNT = 5000;
+const IS_MOBILE = typeof window !== 'undefined' && (
+    'ontouchstart' in window || navigator.maxTouchPoints > 0
+) && window.innerWidth < 1024;
+
+const RAIN_COUNT = IS_MOBILE ? 2000 : 5000;
 const RAIN_AREA = 40;      // spread area around player
 const RAIN_HEIGHT = 25;     // height of rain spawn above player
 const RAIN_LENGTH = 0.3;    // cylinder length

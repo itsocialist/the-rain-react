@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Stats } from '@react-three/drei';
+import { Stats, AdaptiveDpr } from '@react-three/drei';
 import { Physics } from '@react-three/rapier';
 import { Leva, useControls } from 'leva';
 import {
@@ -20,6 +20,7 @@ import { RainSystem } from './shaders/RainShader';
 import { WeatherEngine } from './systems/WeatherEngine';
 import { AIDirector } from './systems/AIDirector';
 import { HUD } from './hud/HUD';
+import { TouchControls } from './hud/TouchControls';
 
 function GameSystems() {
     useBridgeDegradation();
@@ -98,6 +99,9 @@ function Scene() {
                     modulationOffset={0.5}
                 />
             </EffectComposer>
+
+            {/* Performance: auto-scale DPR for mobile */}
+            <AdaptiveDpr pixelated />
         </>
     );
 }
@@ -113,6 +117,7 @@ export default function App() {
                     antialias: true,
                     toneMapping: THREE.ACESFilmicToneMapping,
                     toneMappingExposure: 0.8,
+                    powerPreference: 'high-performance',
                 }}
                 camera={{ fov: 65, near: 0.1, far: 200, position: [0, 25, 15] }}
             >
@@ -126,6 +131,7 @@ export default function App() {
                 </Suspense>
             </Canvas>
             <HUD />
+            <TouchControls />
             {import.meta.env.DEV && <Stats />}
         </>
     );

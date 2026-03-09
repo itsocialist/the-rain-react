@@ -94,8 +94,11 @@ export function PlayerController() {
         const targetVel = new THREE.Vector3(input.direction.x, 0, input.direction.z);
         const hasInput = targetVel.length() > 0.1;
 
+        // Speed is severely reduced while gripping (shimmy, not walk)
+        const speedScale = store.player.mode === 'grip' ? 0.2 : 1.0;
+
         if (hasInput) {
-            targetVel.normalize().multiplyScalar(MAX_SPEED);
+            targetVel.normalize().multiplyScalar(MAX_SPEED * speedScale);
         }
 
         const accel = hasInput ? ACCELERATION : DECELERATION;
@@ -113,7 +116,8 @@ export function PlayerController() {
             weather.windDirection[2]
         ).multiplyScalar(weather.windSpeed * difficulty.windMultiplier * 0.1);
 
-        const exposureFactor = onTower ? 0.3 : 1.0;
+        // Wind is stronger while gripping (exposed, hanging)
+        const exposureFactor = onTower ? 0.3 : (store.player.mode === 'grip' ? 1.5 : 1.0);
         velocityRef.current.add(windVec.multiplyScalar(exposureFactor * dt));
 
         // ── Grip / Fall mechanic ────────────────────────────────────────
@@ -125,11 +129,11 @@ export function PlayerController() {
                 setPlayerMode('traverse');
             }
             setLastSafePosition([pos.x, pos.y, pos.z]);
-        } else if (!hasGroundBelow && store.player.mode !== 'falling') {
-            // Over a gap — check if close enough to grip
-            const nearBridgeHeight = Math.abs(pos.y - PLAYER_GROUND_Y) < 2.0;
+        } else if (!hasGroundBelow) {
+            // Over a gap — can grip OR fall
+            const nearBridgeHeight = Math.abs(pos.y - PLAYER_GROUND_Y) < 3.0;
             if (nearBridgeHeight && store.player.grip > 0 && input.gripAction) {
-                // Actively gripping — drain grip
+                // Actively gripping — hang below bridge, drain grip
                 setPlayerMode('grip');
                 const drainRate =
                     GRIP_DRAIN_BASE *
@@ -141,8 +145,8 @@ export function PlayerController() {
                 if (store.player.grip <= 0) {
                     setPlayerMode('falling');
                 }
-            } else {
-                // Not gripping or too far → fall
+            } else if (store.player.mode !== 'falling') {
+                // No grip → start falling
                 setPlayerMode('falling');
             }
         } else if (hasGroundBelow && !isAtGroundLevel && pos.y > PLAYER_GROUND_Y) {
@@ -171,11 +175,13 @@ export function PlayerController() {
         }
 
         if (store.player.mode === 'falling') {
+            // Accelerating fall
             fallingVelY.current = Math.min(fallingVelY.current + 9.81 * dt, 20);
             newY -= fallingVelY.current * dt;
         } else if (store.player.mode === 'grip') {
-            // Held in place — slight sag for feel
-            newY -= 0.1 * dt;
+            // Hanging position: drop to 1.2 units below bridge surface
+            const HANG_Y = PLAYER_GROUND_Y - 1.2;
+            newY = THREE.MathUtils.lerp(newY, HANG_Y, 0.15);
         } else {
             // Grounded — snap to ground level
             newY = THREE.MathUtils.lerp(newY, PLAYER_GROUND_Y, 0.3);

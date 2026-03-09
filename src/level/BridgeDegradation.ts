@@ -2,8 +2,8 @@ import { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useGameStore } from '../stores/gameStore';
 
-const DEGRADE_INTERVAL = 15; // seconds between degradation ticks
-const DEGRADE_AMOUNT = 0.25;
+const DEGRADE_INTERVAL = 8; // seconds between degradation ticks (faster for PoC)
+const DEGRADE_AMOUNT = 0.5;  // 2 hits to break a segment
 
 export function useBridgeDegradation() {
     const lastDegradeTime = useRef(0);

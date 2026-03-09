@@ -64,8 +64,14 @@ function BridgeSegmentMesh({
         }
     });
 
-    if (!segment.intact && (hasFallen.current && fallTime.current > 3)) {
-        return null; // Remove after falling for 3s
+    // Pre-broken segments: never render
+    if (!segment.intact && !hasFallen.current && fallTime.current === 0) {
+        return null;
+    }
+
+    // Segments that fell during gameplay: remove after animation
+    if (!segment.intact && hasFallen.current && fallTime.current > 3) {
+        return null;
     }
 
     return (

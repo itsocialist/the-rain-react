@@ -74,13 +74,17 @@ const BRIDGE_SEGMENT_WIDTH = 2;
 const BRIDGE_SEGMENT_HEIGHT = 0.5;
 const BRIDGE_SEGMENT_DEPTH = 4;
 const BRIDGE_START_X = -((BRIDGE_SEGMENT_COUNT * BRIDGE_SEGMENT_WIDTH) / 2);
+const BRIDGE_END_X = BRIDGE_START_X + BRIDGE_SEGMENT_COUNT * BRIDGE_SEGMENT_WIDTH;
 const BRIDGE_Y = 20; // High up for vertigo
+
+// Segments to pre-break so player encounters gaps immediately
+const PRE_BROKEN_SEGMENTS = new Set([4, 8]);
 
 function createBridgeSegments(): BridgeSegment[] {
     return Array.from({ length: BRIDGE_SEGMENT_COUNT }, (_, i) => ({
         id: i,
-        intact: true,
-        health: 1,
+        intact: !PRE_BROKEN_SEGMENTS.has(i),
+        health: PRE_BROKEN_SEGMENTS.has(i) ? 0 : 1,
         position: [
             BRIDGE_START_X + i * BRIDGE_SEGMENT_WIDTH + BRIDGE_SEGMENT_WIDTH / 2,
             BRIDGE_Y,
@@ -90,13 +94,13 @@ function createBridgeSegments(): BridgeSegment[] {
 }
 
 const INITIAL_PLAYER: PlayerState = {
-    position: [BRIDGE_START_X - 3, BRIDGE_Y + 2, 0],
+    position: [BRIDGE_START_X - 2, BRIDGE_Y + BRIDGE_SEGMENT_HEIGHT / 2 + 0.8 + 0.5, 0],
     velocity: [0, 0, 0],
     grip: 1,
     stamina: 1,
     mode: 'traverse',
     deaths: 0,
-    lastSafePosition: [BRIDGE_START_X - 3, BRIDGE_Y + 2, 0],
+    lastSafePosition: [BRIDGE_START_X - 2, BRIDGE_Y + BRIDGE_SEGMENT_HEIGHT / 2 + 0.8 + 0.5, 0],
     inputFrequency: 0,
 };
 
@@ -223,5 +227,6 @@ export {
     BRIDGE_SEGMENT_HEIGHT,
     BRIDGE_SEGMENT_DEPTH,
     BRIDGE_START_X,
+    BRIDGE_END_X,
     BRIDGE_Y,
 };

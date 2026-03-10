@@ -83,6 +83,27 @@
   line-height: 1.8;
 }
 
+.hud-cinematic-link {
+  display: inline-block;
+  margin-top: 1.2rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  color: #506878;
+  text-decoration: none;
+  border: 1px solid rgba(80, 104, 120, 0.2);
+  padding: 0.5rem 1.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.hud-cinematic-link:hover {
+  color: #8aa8c0;
+  border-color: rgba(100, 160, 220, 0.4);
+  box-shadow: 0 0 20px rgba(80, 130, 200, 0.15);
+}
+
 /* ── Grip Bar ──────────────────────────────────────────────────────── */
 .hud-grip-container {
   position: absolute;
@@ -182,9 +203,17 @@
   color: #a0b8c8;
 }
 
-.hud-stat-value.mode-traverse { color: #4a9a6a; }
-.hud-stat-value.mode-grip { color: #aa9a3a; }
-.hud-stat-value.mode-falling { color: #aa3a3a; }
+.hud-stat-value.mode-traverse {
+  color: #4a9a6a;
+}
+
+.hud-stat-value.mode-grip {
+  color: #aa9a3a;
+}
+
+.hud-stat-value.mode-falling {
+  color: #aa3a3a;
+}
 
 /* ── Mode Alert ────────────────────────────────────────────────────── */
 .hud-mode-alert {
@@ -209,19 +238,41 @@
 
 /* ── Animations ────────────────────────────────────────────────────── */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @keyframes shake {
-  0%, 100% { transform: translate(-50%, -50%) translateX(0); }
-  25% { transform: translate(-50%, -50%) translateX(-3px); }
-  75% { transform: translate(-50%, -50%) translateX(3px); }
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) translateX(0);
+  }
+
+  25% {
+    transform: translate(-50%, -50%) translateX(-3px);
+  }
+
+  75% {
+    transform: translate(-50%, -50%) translateX(3px);
+  }
 }
 
 /* ── Mobile Responsive ─────────────────────────────────────────────── */

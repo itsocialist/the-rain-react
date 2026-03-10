@@ -19,6 +19,41 @@ export function HUD() {
                     <button className="hud-start-btn" onClick={startLevel}>
                         BEGIN
                     </button>
+                    <a
+                        className="hud-cinematic-link"
+                        href="#cinematic"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            window.location.hash = '#cinematic';
+                            window.location.reload();
+                        }}
+                    >
+                        VIEW CINEMATIC (PROCEDURAL)
+                    </a>
+                    <a
+                        className="hud-cinematic-link"
+                        style={{ marginTop: '10px' }}
+                        href="#cinematic-models"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            window.location.hash = '#cinematic-models';
+                            window.location.reload();
+                        }}
+                    >
+                        VIEW CINEMATIC (3D MODELS)
+                    </a>
+                    <a
+                        className="hud-cinematic-link"
+                        style={{ marginTop: '10px' }}
+                        href="#cinematic-city"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            window.location.hash = '#cinematic-city';
+                            window.location.reload();
+                        }}
+                    >
+                        VIEW CITYSCAPE FLYTHROUGH
+                    </a>
                     <div className="hud-controls-hint">
                         <p>WASD / Arrow Keys to move</p>
                         <p>Touch: D-pad left, Grip right</p>

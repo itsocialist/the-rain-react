@@ -65,7 +65,40 @@ function Root() {
             </React.Suspense>
         );
     }
-
+    if (route === '#model-viewer') {
+        const ModelViewer = React.lazy(() => import('./cinematic/ModelViewer'));
+        return (
+            <React.Suspense fallback={
+                <div style={{
+                    position: 'fixed', inset: 0, background: '#050810',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#4a5a6a', fontFamily: 'monospace', letterSpacing: '4px',
+                    fontSize: '12px'
+                }}>
+                    LOADING MODEL VIEWER...
+                </div>
+            }>
+                <ModelViewer />
+            </React.Suspense>
+        );
+    }
+    if (route === '#world-builder') {
+        const WorldBuilder = React.lazy(() => import('./worldbuilder/WorldBuilder'));
+        return (
+            <React.Suspense fallback={
+                <div style={{
+                    position: 'fixed', inset: 0, background: '#070c14',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#00ddaa', fontFamily: 'monospace', letterSpacing: '6px',
+                    fontSize: '12px'
+                }}>
+                    ⬡ LOADING WORLD BUILDER...
+                </div>
+            }>
+                <WorldBuilder />
+            </React.Suspense>
+        );
+    }
     return <App />;
 }
 

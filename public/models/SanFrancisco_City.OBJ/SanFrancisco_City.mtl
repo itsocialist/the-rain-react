@@ -10,7 +10,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 1
-map_Kd C:\\Users\\Sami_Chakkour\\Desktop\\MyProject\\SanFrancisco\\Textures\\SanFrancisco_Part-0.jpg
+map_Kd ../Textures/SanFrancisco_Part-0.jpg
 
 newmtl SanFrancisco_Part-1
 Ns 1000.000000
@@ -21,7 +21,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 1
-map_Kd C:\\Users\\Sami_Chakkour\\Desktop\\MyProject\\SanFrancisco\\Textures\\SanFrancisco_Part-1.jpg
+map_Kd ../Textures/SanFrancisco_Part-1.jpg
 
 newmtl SanFrancisco_Part-2
 Ns 1000.000000
@@ -32,7 +32,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 1
-map_Kd C:\\Users\\Sami_Chakkour\\Desktop\\MyProject\\SanFrancisco\\Textures\\SanFrancisco_Part-2.jpg
+map_Kd ../Textures/SanFrancisco_Part-2.jpg
 
 newmtl SanFrancisco_Part-3
 Ns 1000.000000
@@ -43,7 +43,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 1
-map_Kd C:\\Users\\Sami_Chakkour\\Desktop\\MyProject\\SanFrancisco\\Textures\\SanFrancisco_Part-3.jpg
+map_Kd ../Textures/SanFrancisco_Part-3.jpg
 
 newmtl SanFrancisco_Part-4
 Ns 1000.000000
@@ -54,7 +54,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 1
-map_Kd C:\\Users\\Sami_Chakkour\\Desktop\\MyProject\\SanFrancisco\\Textures\\SanFrancisco_Part-4.jpg
+map_Kd ../Textures/SanFrancisco_Part-4.jpg
 
 newmtl SanFrancisco_Part-5
 Ns 1000.000000
@@ -65,7 +65,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 1
-map_Kd C:\\Users\\Sami_Chakkour\\Desktop\\MyProject\\SanFrancisco\\Textures\\SanFrancisco_Part-5.jpg
+map_Kd ../Textures/SanFrancisco_Part-5.jpg
 
 newmtl SanFrancisco_Part-6
 Ns 1000.000000
@@ -76,4 +76,4 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.450000
 d 1.000000
 illum 1
-map_Kd C:\\Users\\Sami_Chakkour\\Desktop\\MyProject\\SanFrancisco\\Textures\\SanFrancisco_Part-6.jpg
+map_Kd ../Textures/SanFrancisco_Part-6.jpg

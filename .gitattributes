@@ -14,3 +14,4 @@
 /public/models/building_1.glb filter=lfs diff=lfs merge=lfs -text
 /public/models/building_2.glb filter=lfs diff=lfs merge=lfs -text
 /public/models/full_gameready_city_buildings.glb filter=lfs diff=lfs merge=lfs -text
+/public/models/meshy_bridge_vt.glb filter=lfs diff=lfs merge=lfs -text

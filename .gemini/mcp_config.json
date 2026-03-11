@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "threedee": {
+      "command": "/Users/briandawson/.nvm/versions/node/v25.4.0/bin/npx",
+      "args": [
+        "-y",
+        "threedee-mcp"
+      ],
+      "env": {
+        "MESHY_API_KEY": "msy_7aDXQyOUZK9VOZOdDxgA2Pw9nEHUOK0LiDXC"
+      }
+    },
+    "meshy-ai": {
+      "command": "/Users/briandawson/.nvm/versions/node/v25.4.0/bin/npx",
+      "args": [
+        "-y",
+        "meshy-ai-mcp-server"
+      ],
+      "env": {
+        "MESHY_API_KEY": "msy_7aDXQyOUZK9VOZOdDxgA2Pw9nEHUOK0LiDXC"
+      }
+    }
+  }
+}

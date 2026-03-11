@@ -1,6 +1,6 @@
-import { Suspense, useMemo, useRef } from 'react';
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { useGLTF } from '@react-three/drei';
+import { Suspense, useMemo, useRef, useEffect } from 'react';
+import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
+import { useGLTF, Environment } from '@react-three/drei';
 import {
     EffectComposer,
     Vignette,
@@ -13,6 +13,8 @@ import {
 import { BlendFunction, KernelSize } from 'postprocessing';
 import * as THREE from 'three';
 import { Water } from 'three-stdlib';
+import { useControls, folder } from 'leva';
+
 
 import { CinematicRain } from './CinematicRain';
 import { CloudLayer, WindDebris, HeightFog } from './AtmosphericEffects';
@@ -20,49 +22,117 @@ import { LightningSystem, AmbientAudio } from './CinematicFX';
 import './CinematicScene.css';
 
 /**
+ * Loads a generic meshy.ai asset and applies configurable scaling and positioning.
+ */
+function MeshyAsset({ url, position, scale, rotation }: { url: string; position: number[]; scale: number; rotation: number[] }) {
+    const { scene } = useGLTF(url);
+    const cloned = useMemo(() => scene.clone(), [scene]);
+    
+    useEffect(() => {
+        cloned.traverse((child: any) => {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+                if (child.material) {
+                    child.material.envMapIntensity = 1.0;
+                    child.material.needsUpdate = true;
+                }
+            }
+        });
+    }, [cloned]);
+
+    return <primitive object={cloned} position={position as [number, number, number]} scale={[scale, scale, scale]} rotation={rotation as [number, number, number]} />;
+}
+useGLTF.preload('/models/meshy_bridge_vt.glb');
+useGLTF.preload('/models/meshy_character_vt.glb');
+
+/**
  * Loads the full game-ready city model and applies noir material hijack.
  */
 function CityModel() {
-    const { scene } = useGLTF('/models/full_gameready_city_buildings.glb');
+    const { scene, materials } = useGLTF('/models/full_gameready_city_buildings.glb');
 
-    const processedScene = useMemo(() => {
-        const clone = scene.clone(true);
+    const materialConfig = useControls('Building Materials', {
+        overrideColor: true,
+        color: '#5c5c63',
+        overrideRoughness: true,
+        roughness: { value: 0.11, min: 0, max: 1, step: 0.01 },
+        overrideMetalness: true,
+        metalness: { value: 0.22, min: 0, max: 1, step: 0.01 },
+        overrideEnvMap: true,
+        envMapIntensity: { value: 1.0, min: 0, max: 5, step: 0.1 },
+        disableEmissive: true,
+        disableTextures: false,
+    });
 
-        clone.traverse((child) => {
+    useEffect(() => {
+        let meshCount = 0;
+        let instancedCount = 0;
+        
+        scene.traverse((child) => {
             if ((child as THREE.Mesh).isMesh) {
+                meshCount++;
                 const mesh = child as THREE.Mesh;
+                if ((mesh as THREE.InstancedMesh).isInstancedMesh) {
+                    instancedCount++;
+                }
 
-                const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-                const newMaterials = materials.map((oldMat: THREE.Material) => {
-                    const stdMat = oldMat as THREE.MeshStandardMaterial;
-
-                    // Preserve color with noir darkening (45% brightness)
-                    let baseColor = new THREE.Color('#1a2030');
-                    if (stdMat.color) {
-                        baseColor = stdMat.color.clone().multiplyScalar(0.45);
+                // Modify original materials directly to preserve maps
+                const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+                mats.forEach(oldMat => {
+                    const mat = oldMat as THREE.MeshStandardMaterial;
+                    
+                    // Keep track of the original color if we haven't already
+                    if (mat.color && (!mat.userData.originalColor)) {
+                        mat.userData.originalColor = mat.color.clone();
                     }
 
-                    return new THREE.MeshStandardMaterial({
-                        color: baseColor,
-                        map: stdMat.map || null,
-                        alphaMap: stdMat.alphaMap || null,
-                        transparent: stdMat.transparent || (stdMat.opacity != null && stdMat.opacity < 1),
-                        opacity: stdMat.opacity ?? 1,
-                        side: stdMat.side ?? THREE.FrontSide,
-                        roughness: 0.15, // Makes the buildings look wet
-                        metalness: 0.2,
-                        envMapIntensity: 0.5,
-                    });
+                    if (mat.color && mat.userData.originalColor) {
+                        if (materialConfig.overrideColor) {
+                            mat.color.set(materialConfig.color);
+                        } else {
+                            mat.color.copy(mat.userData.originalColor);
+                        }
+                    }
+
+                    if (materialConfig.overrideRoughness) mat.roughness = materialConfig.roughness;
+                    if (materialConfig.overrideMetalness) mat.metalness = materialConfig.metalness;
+                    
+                    if (mat.emissive && materialConfig.disableEmissive) {
+                        mat.emissive.setHex(0x000000); // Stop self-glowing
+                    }
+                    
+                    if (materialConfig.overrideEnvMap) mat.envMapIntensity = materialConfig.envMapIntensity;
+                    
+                    if (materialConfig.disableTextures) {
+                        if (mat.map && !mat.userData.originalMap) mat.userData.originalMap = mat.map;
+                        if (mat.normalMap && !mat.userData.originalNormalMap) mat.userData.originalNormalMap = mat.normalMap;
+                        if (mat.roughnessMap && !mat.userData.originalRoughnessMap) mat.userData.originalRoughnessMap = mat.roughnessMap;
+                        if (mat.metalnessMap && !mat.userData.originalMetalnessMap) mat.userData.originalMetalnessMap = mat.metalnessMap;
+                        
+                        mat.map = null;
+                        mat.normalMap = null;
+                        mat.roughnessMap = null;
+                        mat.metalnessMap = null;
+                    } else {
+                        if (mat.userData.originalMap) mat.map = mat.userData.originalMap;
+                        if (mat.userData.originalNormalMap) mat.normalMap = mat.userData.originalNormalMap;
+                        if (mat.userData.originalRoughnessMap) mat.roughnessMap = mat.userData.originalRoughnessMap;
+                        if (mat.userData.originalMetalnessMap) mat.metalnessMap = mat.userData.originalMetalnessMap;
+                    }
+
+                    mat.needsUpdate = true;
                 });
 
-                mesh.material = newMaterials.length === 1 ? newMaterials[0] : newMaterials;
-                mesh.castShadow = false;
                 mesh.receiveShadow = false;
+                mesh.castShadow = false;
             }
         });
 
-        return clone;
-    }, [scene]);
+        console.log(`CityModel matched ${meshCount} meshes (${instancedCount} instanced).`);
+    }, [scene, materialConfig]);
+
+    const processedScene = scene;
 
     // Compute model bounds to position it correctly
     const { scale, yOffset } = useMemo(() => {
@@ -176,40 +246,75 @@ function CityFloodPlane() {
 }
 
 function CinematicCityWorld() {
+    const { gl } = useThree();
+
+    const lightingConfig = useControls('Lighting', {
+        exposure: { value: 1.45, min: 0.1, max: 3, step: 0.05 },
+        ambientIntensity: { value: 0.40, min: 0, max: 2, step: 0.05 },
+        mainLightIntensity: { value: 0.35, min: 0, max: 2, step: 0.05 },
+        godRayIntensity: { value: 1.45, min: 0, max: 2, step: 0.05 },
+        fillLightIntensity: { value: 1.55, min: 0, max: 2, step: 0.01 },
+        hemisphereIntensity: { value: 1.10, min: 0, max: 2, step: 0.05 },
+    });
+
+    const effectConfig = useControls('Effects', {
+        showRain: true,
+        showClouds: true,
+        showDebris: true,
+        showFog: true,
+        showLightning: true,
+        postProcessing: folder({
+            enabled: true,
+            bloomIntensity: { value: 0.20, min: 0, max: 2, step: 0.05 },
+            bloomThreshold: { value: 0.85, min: 0, max: 1, step: 0.05 },
+            brightness: { value: -0.1, min: -0.5, max: 0.5, step: 0.01 },
+            contrast: { value: 0.1, min: -0.5, max: 0.5, step: 0.01 },
+            saturation: { value: -0.12, min: -1, max: 1, step: 0.05 },
+            vignetteDarkness: { value: 0.70, min: 0, max: 1, step: 0.05 },
+        })
+    });
+
+    useEffect(() => {
+        gl.toneMappingExposure = lightingConfig.exposure;
+    }, [lightingConfig.exposure, gl]);
+
     return (
         <>
             {/* Atmospheric lighting */}
-            <ambientLight intensity={0.1} color="#5566aa" />
+            <ambientLight intensity={lightingConfig.ambientIntensity} color="#5566aa" />
 
-            {/* Main overcast light */}
+            {/* Realistic environment reflections for wet materials */}
+            <Environment preset="city" />
+
+            {/* Main overcast light - lowered angle so flat roofs do not reflect blinding circle */}
             <directionalLight
-                position={[15, 40, 10]}
-                intensity={0.35}
+                position={[100, 20, 50]}
+                intensity={lightingConfig.mainLightIntensity}
                 color="#8899cc"
             />
 
-            {/* God ray — warm break in clouds */}
+            {/* God ray — warm break in clouds - glancing side angle */}
             <directionalLight
-                position={[30, 50, -20]}
-                intensity={0.2}
+                position={[-100, 15, -80]}
+                intensity={lightingConfig.godRayIntensity}
                 color="#ddcc88"
             />
 
             {/* Fill from below — water reflection bounce */}
             <pointLight
                 position={[0, -5, 0]}
-                intensity={0.04}
+                intensity={lightingConfig.fillLightIntensity}
                 color="#1a3a5a"
                 distance={100}
             />
 
             {/* Hemisphere for sky/ground color */}
             <hemisphereLight
-                args={['#2a3545', '#080610', 0.4]}
+                args={['#2a3545', '#080610', lightingConfig.hemisphereIntensity]}
             />
 
             {/* Dense atmospheric fog */}
-            <fog attach="fog" args={['#0a0f18', 20, 150]} />
+            {effectConfig.showFog && <fog attach="fog" args={['#0a0f18', 20, 150]} />}
 
             {/* Storm sky dome */}
             <mesh scale={[-1, 1, 1]}>
@@ -251,50 +356,76 @@ function CinematicCityWorld() {
             <CityFloodPlane />
 
             {/* Atmospheric effects */}
-            <CinematicRain />
-            <CloudLayer />
-            <WindDebris />
+            {effectConfig.showRain && <CinematicRain />}
+            {effectConfig.showClouds && <CloudLayer />}
+            {effectConfig.showDebris && <WindDebris />}
             <HeightFog />
-            <LightningSystem />
+            {effectConfig.showLightning && <LightningSystem />}
             <AmbientAudio />
 
             {/* Flythrough camera */}
             <CityFlythrough />
 
-            {/* Post-processing — cinematic noir grading */}
-            <EffectComposer>
-                <Bloom
-                    intensity={0.2}
-                    luminanceThreshold={0.55}
-                    luminanceSmoothing={0.8}
-                    kernelSize={KernelSize.MEDIUM}
-                />
-                <BrightnessContrast
-                    brightness={-0.04}
-                    contrast={0.1}
-                />
-                <HueSaturation
-                    hue={0.05}
-                    saturation={-0.25}
-                />
-                <Vignette
-                    offset={0.15}
-                    darkness={0.95}
-                    blendFunction={BlendFunction.NORMAL}
-                />
-                <ChromaticAberration
-                    offset={new THREE.Vector2(0.0008, 0.0008)}
-                    blendFunction={BlendFunction.NORMAL}
-                    radialModulation={true}
-                    modulationOffset={0.5}
-                />
-                <DepthOfField
-                    focusDistance={0.03}
-                    focalLength={0.06}
-                    bokehScale={3}
-                />
-            </EffectComposer>
+            {effectConfig.enabled && (
+                <EffectComposer>
+                    <Bloom
+                        intensity={effectConfig.bloomIntensity}
+                        luminanceThreshold={effectConfig.bloomThreshold}
+                        luminanceSmoothing={0.8}
+                        kernelSize={KernelSize.MEDIUM}
+                    />
+                    <BrightnessContrast
+                        brightness={effectConfig.brightness}
+                        contrast={effectConfig.contrast}
+                    />
+                    <HueSaturation
+                        hue={0.05}
+                        saturation={effectConfig.saturation}
+                    />
+                    <Vignette
+                        offset={0.15}
+                        darkness={effectConfig.vignetteDarkness}
+                        blendFunction={BlendFunction.NORMAL}
+                    />
+                    <ChromaticAberration
+                        offset={new THREE.Vector2(0.0008, 0.0008)}
+                        blendFunction={BlendFunction.NORMAL}
+                        radialModulation={true}
+                        modulationOffset={0.5}
+                    />
+                    <DepthOfField
+                        focusDistance={0.03}
+                        focalLength={0.06}
+                        bokehScale={3}
+                    />
+                </EffectComposer>
+            )}
+            {/* Meshy AI Generated Assets */}
+            <MeshyCyberpunkAssets />
         </>
+    );
+}
+
+function MeshyCyberpunkAssets() {
+    const bridgeConfig = useControls('Meshy Bridge', {
+        show: true,
+        position: [24, 25.4, 2],
+        scale: { value: 6.0, min: 0.1, max: 20, step: 0.1 },
+        rotation: [0, 1.57, 0]
+    });
+    
+    const charConfig = useControls('Meshy Character', {
+        show: true,
+        position: [12, 10, -5],
+        scale: { value: 3.5, min: 0.1, max: 10, step: 0.1 },
+        rotation: [0, 0, 0]
+    });
+
+    return (
+        <group>
+            {bridgeConfig.show && <MeshyAsset url="/models/meshy_bridge_vt.glb" {...bridgeConfig} />}
+            {charConfig.show && <MeshyAsset url="/models/meshy_character_vt.glb" {...charConfig} />}
+        </group>
     );
 }
 
